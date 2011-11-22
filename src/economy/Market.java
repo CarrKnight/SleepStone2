@@ -71,7 +71,7 @@ public class Market {
 
 
     /**
-     * Try to acquire stuff and WAIT until you can.
+     * Try to acquire stuff and WAIT until you can.aa
      * @param goodType the type of good you want to buy
      * @param amount how much you want
      */
