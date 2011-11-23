@@ -41,7 +41,14 @@ public class Firm extends Thread {
     //around a single static semaphor
     private Market market = new Market();
 
-    /**
+    
+    
+    
+    public Market getMarket() {
+		return market;
+	}
+
+	/**
      * Does it hire/fire workers?
      */
     private boolean isAdaptive = true;
@@ -52,8 +59,9 @@ public class Firm extends Thread {
     private long maxOutputWaitingTime = 250l;
 
     private int workers= defaultWorkers;
+    public int getWorkers() {return workers;}
 
-    final private String firmName;
+	final private String firmName;
 
     final private int jobsToDo;
 
@@ -182,6 +190,7 @@ public class Firm extends Thread {
                     market.getLabor().hire();
                     workers++;
                     System.out.println("hire: now "+ firmName + " has " + workers + " workers");
+                    Data.countWorkers(System.currentTimeMillis());
                 }
             }finally{
             market.getLabor().lock.unlock();
@@ -219,7 +228,7 @@ public class Firm extends Thread {
                 market.getLabor().fire();
                 workers--;
                 System.out.println("fire: now "+ firmName + " has " + workers + " workers");
-
+                Data.countWorkers(System.currentTimeMillis());
             }finally{
                 market.getLabor().lock.unlock();
             }

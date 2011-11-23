@@ -108,7 +108,22 @@ public class Market {
 
         return builder.toString();
     }
+    
+    
 
+    public synchronized String[] toStringArray(){
+    	String[] toReturn = new String[Good.values().length+1];
+    	
+    	toReturn[0] = Long.toString(System.currentTimeMillis());
+    	
+    	for(Good x :Good.values()){
+    		toReturn[x.ordinal()+1] = Integer.toString(globalInventory[x.ordinal()].availablePermits());
+    	}
+    	
+    	return toReturn;
+    	
+    	
+    }
 
 
 

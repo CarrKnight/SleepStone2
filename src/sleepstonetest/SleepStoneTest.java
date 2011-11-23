@@ -4,10 +4,13 @@
  */
 package sleepstonetest;
 
+import economy.Data;
 import economy.Good;
 import economy.Input;
 import economy.Market;
 import economy.firm.Firm;
+
+import java.util.ArrayList;
 import java.util.concurrent.Executor;
 
 /**
@@ -16,7 +19,12 @@ import java.util.concurrent.Executor;
  */
 public class SleepStoneTest {
 
-    /**
+	public final static ArrayList<Firm> firms = new ArrayList<Firm>();;
+	
+
+
+
+	/**
      * @param args the command line arguments
      */
 /*    public static void main(String[] args) {
@@ -36,10 +44,13 @@ public class SleepStoneTest {
 
         @SuppressWarnings("unused")
 		Market market = new Market();
-        Firm firmOne = new Firm(300, "Iron Mine", Good.IRON, 10, 2,new Input(Good.TOOLS, 10));
-        Firm firmTwo = new Firm(600, "Smelters", Good.PIG_IRON, 10, 2,new Input(Good.IRON, 10));
-        Firm firmThree = new Firm(900, "Steel Mill", Good.STEEL, 10, 2,new Input(Good.PIG_IRON, 10));
-        Firm firmFour = new Firm(1200, "Equipment Manufactory", Good.TOOLS, 10, 2,new Input(Good.STEEL, 10));
+        Firm firmOne = new Firm(300, "Iron Mine", Good.IRON, 10, 2,new Input(Good.TOOLS, 10)); firms.add(firmOne);
+        Firm firmTwo = new Firm(600, "Smelters", Good.PIG_IRON, 10, 2,new Input(Good.IRON, 10));firms.add(firmTwo);
+        Firm firmThree = new Firm(900, "Steel Mill", Good.STEEL, 10, 2,new Input(Good.PIG_IRON, 10)); firms.add(firmThree);
+        Firm firmFour = new Firm(1200, "Equipment Manufactory", Good.TOOLS, 10, 2,new Input(Good.STEEL, 10)); firms.add(firmFour);
+        
+        
+        Data.initializeData();
         firmOne.start(); firmTwo.start();firmThree.start();firmFour.start();
 
     }
