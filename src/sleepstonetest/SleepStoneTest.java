@@ -42,17 +42,28 @@ public class SleepStoneTest {
 	
 	public static void main(String[] args) {
 
-        @SuppressWarnings("unused")
+		@SuppressWarnings("unused")
 		Market market = new Market();
-        Firm firmOne = new Firm(300, "Iron Mine", Good.IRON, 10, 2,new Input(Good.TOOLS, 10)); firms.add(firmOne);
-        Firm firmTwo = new Firm(600, "Smelters", Good.PIG_IRON, 10, 2,new Input(Good.IRON, 10));firms.add(firmTwo);
-        Firm firmThree = new Firm(900, "Steel Mill", Good.STEEL, 10, 2,new Input(Good.PIG_IRON, 10)); firms.add(firmThree);
-        Firm firmFour = new Firm(1200, "Equipment Manufactory", Good.TOOLS, 10, 2,new Input(Good.STEEL, 10)); firms.add(firmFour);
-        
-        
-        Data.initializeData();
-        firmOne.start(); firmTwo.start();firmThree.start();firmFour.start();
+		Firm firmOne = new Firm(300, "Iron Mine", Good.IRON, 10, 2,new Input(Good.TOOLS, 0)); firms.add(firmOne);
+		Firm firmTwo = new Firm(600, "Smelters", Good.PIG_IRON, 10, 2,new Input(Good.IRON, 10));firms.add(firmTwo);
+		Firm firmThree = new Firm(900, "Steel Mill", Good.STEEL, 10, 2,new Input(Good.PIG_IRON, 10)); firms.add(firmThree);
+		Firm firmFour = new Firm(1200, "Equipment Manufactory", Good.TOOLS, 10, 2,new Input(Good.STEEL, 10)); firms.add(firmFour);
 
-    }
-	
+
+
+		startSimulation(market);
+	//	firmOne.start(); firmTwo.start();firmThree.start();firmFour.start();
+
+	}
+
+	private static void startSimulation(Market market){
+		Data.initializeData();
+		for(Firm x : firms)
+		{
+			x.start();
+		}
+		market.getLabor().startWorkers();
+
+	}
+
 }

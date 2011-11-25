@@ -4,10 +4,13 @@
  */
 package economy.firm;
 
+import economy.Consumer;
 import economy.Data;
 import economy.Good;
 import economy.Input;
 import economy.Market;
+
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -58,9 +61,15 @@ public class Firm extends Thread {
     private long maxInputWaitingTime = 500l;
     private long maxOutputWaitingTime = 250l;
 
-    private int workers= defaultWorkers;
-    public int getWorkers() {return workers;}
+  //  private int workers= defaultWorkers;
+  //  public int getWorkers() {return workers;}
+    
+    final private ArrayList<Consumer> workers = new ArrayList<Consumer>();
 
+    public int getFirmSize(){
+    	return workers.size();
+    }
+    
 	final private String firmName;
 
     final private int jobsToDo;
@@ -96,6 +105,9 @@ public class Firm extends Thread {
         this.outputType = outputType;
         this.outputQuantity = outputQuantity;
         this.inputs = Arrays.asList(inputs);
+        
+        for(int i=0; i< defaultWorkers; i++)
+        	hire(true);
     }
 
       public Firm(int workToBeDone, String name,
@@ -107,7 +119,8 @@ public class Firm extends Thread {
         this.outputType = outputType;
         this.outputQuantity = outputQuantity;
         this.inputs = Arrays.asList(inputs);
-        this.workers = workers;
+        for(int i=0; i< workers; i++)
+        	hire(true);
     }
 
 
@@ -129,14 +142,14 @@ public class Firm extends Thread {
             //check for inputs!
             gatherSupplies();
 
-            System.out.println(this.firmName + " Finished gathering supplies after " + (System.currentTimeMillis()-wait));
+            //System.out.println(this.firmName + " Finished gathering supplies after " + (System.currentTimeMillis()-wait));
             /********************************
              * PRODUCTION
              ********************************/
              wait = System.currentTimeMillis();
             //set up the work to be done
             //"hire the workers"
-            workpool = Executors.newFixedThreadPool(workers);
+            workpool = Executors.newFixedThreadPool(workers.size());
             //"set up and start the jobs!"
             for(int i=0; i<jobsToDo; i++)
             {
@@ -153,8 +166,8 @@ public class Firm extends Thread {
             }
 
             //we are done!
-            System.out.println(this.firmName + " ended production in ms :" + (System.currentTimeMillis()-wait) 
-            		+ " with " + workers + " workers");
+           // System.out.println(this.firmName + " ended production in ms :" + (System.currentTimeMillis()-wait) 
+           // 		+ " with " + workers.size() + " workers");
 
             //clean up
             workpool.shutdownNow();
@@ -174,7 +187,7 @@ public class Firm extends Thread {
 
 
             //how's the market today?
-      //      System.out.println(market.toString());
+     //       System.out.println(market.toString());
     //        System.out.println(this.name + " finished selling at time" + System.currentTimeMillis());
 
             /***********************************
@@ -183,19 +196,8 @@ public class Firm extends Thread {
             //if there is high demand and free workers: hire somebody!
             if(isAdaptive && market.getDelay(outputType) > maxOutputWaitingTime)
             {
-            market.getLabor().lock.lock();
-            try{
-                if(market.getLabor().isThereAFreeWorker())
-                {
-                    market.getLabor().hire();
-                    workers++;
-                    System.out.println("hire: now "+ firmName + " has " + workers + " workers");
-                    Data.countWorkers(System.currentTimeMillis());
-                }
-            }finally{
-            market.getLabor().lock.unlock();
-            }
-
+           
+            	hire(false);
             }
         }
 
@@ -207,32 +209,31 @@ public class Firm extends Thread {
      */
     private void gatherSupplies(){
 
-        //
-        long totalWait = System.currentTimeMillis();
-        for(Input input : inputs){
-            //TODO change this to multi-threaded
-            long inputWait = System.currentTimeMillis();
-            market.buy(input.getGood(), input.getAmount());
-            market.registerDelay(System.currentTimeMillis()-inputWait, input.getGood());
-        }
-        totalWait = System.currentTimeMillis()- totalWait ;
-        //if you are here all inputs have been bought!
-        Data.beginProduction(this, outputType,System.currentTimeMillis());
+    	long totalWait = System.currentTimeMillis();
+    	for(Input input : inputs){
+    		//TODO change this to multi-threaded
+    		long inputWait = System.currentTimeMillis();
+    		if(input.getAmount()>0){
+    			try {
+
+    				market.buy(input.getGood(), input.getAmount());
+    			} catch (InterruptedException e) {
+    				// this shouldn't happen. Only consumers can be interrupted!
+    				throw new RuntimeException("Interrupted when buying!");
+    			}
+    		
+    		market.registerDelay(System.currentTimeMillis()-inputWait, input.getGood());
+    		}
+    	}
+    	totalWait = System.currentTimeMillis()- totalWait ;
+    	//if you are here all inputs have been bought!
+    	Data.beginProduction(this, outputType,System.currentTimeMillis());
 
         //Fire somebody
-        if(isAdaptive && totalWait > maxInputWaitingTime && workers > 1)
+        if(isAdaptive && totalWait > maxInputWaitingTime && workers.size() > 1)
         {
 
-            market.getLabor().lock.lock();
-            try{
-                market.getLabor().fire();
-                workers--;
-                System.out.println("fire: now "+ firmName + " has " + workers + " workers");
-                Data.countWorkers(System.currentTimeMillis());
-            }finally{
-                market.getLabor().lock.unlock();
-            }
-
+           this.fire();
 
         }
 
@@ -244,6 +245,39 @@ public class Firm extends Thread {
         return firmName;
     }
 
+    private void fire(){
+    	
+    	  market.getLabor().lock.lock();
+          try{
+        	  Consumer toFire = workers.remove(0);
+              market.getLabor().fire(this, toFire);
+              System.out.println("fire: now "+ firmName + " has " + workers.size() + " workers");
+              Data.countWorkers(System.currentTimeMillis());
+          }finally{
+              market.getLabor().lock.unlock();
+          }
 
+    }
+    
+    
+    private void hire(boolean isItInitialWorker){
+    	 market.getLabor().lock.lock();
+         try{
+             if(market.getLabor().isThereAFreeWorker())
+             {
+                 Consumer employee = market.getLabor().hire(this,!isItInitialWorker);
+                 workers.add(employee);
+                 System.out.println("hire: now "+ firmName + " has " + workers.size() + " workers");
+                 if(!isItInitialWorker)
+                	 Data.countWorkers(System.currentTimeMillis());
+             }
+         }finally{
+         market.getLabor().lock.unlock();
+         }
+    	
+    	
+    }
+    
+//TODO add a function for hiring the initial workers!
 
 }

@@ -30,7 +30,7 @@ public class Market {
     final static private Semaphore[] globalInventory = new Semaphore[Good.values().length];
 
 
-    final static private LaborMarket labor = new LaborMarket(50);
+    final static private LaborMarket labor = new LaborMarket(1000, new Market());
 
     final static private Double[] delays = new Double[Good.values().length];
 
@@ -44,6 +44,9 @@ public class Market {
 
     public void registerDelay(Long delay, Good market){
         delays[market.ordinal()] = delays[market.ordinal()] * .5 + ((double) delay) * .5;
+        if(market == Good.TOOLS)
+     //   	System.out.println("delay in " + market + " is now " + delays[market.ordinal()]);
+        	System.out.println("Consumers Waiting : " + globalInventory[market.ordinal()].getQueueLength());
 
     }
 
@@ -54,7 +57,7 @@ public class Market {
     //static initialization is useful because no thread can touch anything in it
     //so we can fully initialize what's important
     static{
-        //they'll not have fairness, not necessarilly who asks first get there first
+       
         for(Good x : Good.values()){
             globalInventory[x.ordinal()] = new Semaphore(10, true);
             delays[x.ordinal()] = new Double(0);
@@ -74,10 +77,11 @@ public class Market {
      * Try to acquire stuff and WAIT until you can.aa
      * @param goodType the type of good you want to buy
      * @param amount how much you want
+     * @throws InterruptedException 
      */
-    public void buy(Good goodType, int amount){
+    public void buy(Good goodType, int amount) throws InterruptedException{
 
-        globalInventory[goodType.ordinal()].acquireUninterruptibly(amount);
+        globalInventory[goodType.ordinal()].acquire(amount);
 
     }
 

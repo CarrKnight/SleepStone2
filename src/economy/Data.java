@@ -97,7 +97,7 @@ public class Data {
     		workers[0] = Integer.toString(0);
     		for(int i=0; i < numberOfFirms; i++)
     		{
-    			workers[i+1] = Integer.toString(SleepStoneTest.firms.get(i).getWorkers());
+    			workers[i+1] = Integer.toString(SleepStoneTest.firms.get(i).getFirmSize());
     		}
     		workerWriter.writeNext(workers);
     		
@@ -199,7 +199,7 @@ public class Data {
         		workers[0] = Long.toString(time - getInitialTime());
         		for(int i=0; i < numberOfFirms; i++)
         		{
-        			workers[i+1] = Integer.toString(SleepStoneTest.firms.get(i).getWorkers());
+        			workers[i+1] = Integer.toString(SleepStoneTest.firms.get(i).getFirmSize());
         		}
         		workerWriter.writeNext(workers);
         		try {
