@@ -6,9 +6,12 @@ package economy.firm;
 
 import economy.Consumer;
 import economy.Data;
-import economy.Good;
-import economy.Input;
-import economy.Market;
+import economy.Trader;
+import economy.good.Good;
+import economy.good.GoodType;
+import economy.good.Input;
+import economy.market.CentralizedExchange;
+import economy.market.Market;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -17,15 +20,44 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Semaphore;
 
+import javax.management.RuntimeErrorException;
 
+
+import static org.junit.Assert.*;
+
+import org.junit.Test;
 
 /**
  *
  * @author carrknight
  */
-public class Firm extends Thread {
+public class Firm extends Thread implements Trader{
 
-    /**
+	
+	double money=100;
+	
+	
+	
+	public double getMoney() {
+		return money;
+	}
+
+	private double markup=.05d;
+	
+	private double productionCost;
+	
+	
+	
+	@SuppressWarnings("unused")
+	private List<Good>[] inventory = (ArrayList<Good>[])new ArrayList[GoodType.values().length];
+	
+	
+	
+    public List<Good> getInventory(GoodType type) {
+		return inventory[type.ordinal()];
+	}
+
+	/**
      * Whenever a job is completed workers "add" one to the semaphore.
      * The firm wait at the semaphore until all jobs are done
      */
@@ -41,7 +73,7 @@ public class Firm extends Thread {
 
      //one market for all
     //Although everyone has its own reference the market itself is just a wrapper
-    //around a single static semaphor
+    //around a single static semaphore
     private Market market = new Market();
 
     
@@ -76,7 +108,7 @@ public class Firm extends Thread {
 
     final private List<Input> inputs;
 
-    final private Good outputType;
+    final private GoodType outputType;
 
     final private Integer outputQuantity;
 
@@ -89,7 +121,7 @@ public class Firm extends Thread {
         return outputQuantity;
     }
 
-    public Good getOutputType() {
+    public GoodType getOutputType() {
         return outputType;
     }
 
@@ -98,7 +130,7 @@ public class Firm extends Thread {
     }
 
     public Firm(int workToBeDone, String name,
-            Good outputType, Integer outputQuantity, Input... inputs) {
+            GoodType outputType, Integer outputQuantity, Input... inputs) {
         super();
         this.jobsToDo = workToBeDone;
         this.firmName = name;
@@ -108,10 +140,14 @@ public class Firm extends Thread {
         
         for(int i=0; i< defaultWorkers; i++)
         	hire(true);
+        
+        //build the arraylist of inventories
+        for(int i=0; i< inventory.length ; i++)
+        	inventory[i] = new ArrayList<Good>();
     }
 
       public Firm(int workToBeDone, String name,
-            Good outputType, Integer outputQuantity, int workers,
+            GoodType outputType, Integer outputQuantity, int workers,
             Input... inputs) {
         super();
         this.jobsToDo = workToBeDone;
@@ -121,6 +157,10 @@ public class Firm extends Thread {
         this.inputs = Arrays.asList(inputs);
         for(int i=0; i< workers; i++)
         	hire(true);
+        
+        //build the arraylist of inventories
+        for(int i=0; i< inventory.length ; i++)
+        	inventory[i] = new ArrayList<Good>();
     }
 
 
@@ -166,15 +206,21 @@ public class Firm extends Thread {
             }
 
             //we are done!
-           // System.out.println(this.firmName + " ended production in ms :" + (System.currentTimeMillis()-wait) 
-           // 		+ " with " + workers.size() + " workers");
+            System.out.println(this.firmName + " ended production in ms :" + (System.currentTimeMillis()-wait) 
+            		+ " with " + workers.size() + " workers");
 
             //clean up
             workpool.shutdownNow();
             workpool=null;
        //      numbersToCrunch=null;
-       //     System.out.println(this.name + " cleaned up at time" + System.currentTimeMillis());
-
+       
+            //now the goods appear in your inventory
+            ArrayList<Good> toSell = new ArrayList<Good>();
+            for(int i=0; i < outputQuantity; i++)
+            	toSell.add(new Good(outputType, this, productionCost, markup));
+            
+            inventory[outputType.ordinal()].addAll(toSell);
+            	
             /********************************
              * RETAIL
              ********************************/
@@ -183,7 +229,8 @@ public class Firm extends Thread {
             //tell big data about it
             Data.endProduction(this, outputType,System.currentTimeMillis());
             //sell to the market!
-            market.sell(outputType, outputQuantity);
+            for(Good output : toSell)
+            	market.sell(output);
 
 
             //how's the market today?
@@ -206,26 +253,32 @@ public class Firm extends Thread {
 
     /**
      *  This gathers supplies and ammo but also checks whether it's time to fire somebody
+     *  Finally, it computes the cost of production
      */
     private void gatherSupplies(){
 
+    	productionCost = 0d;
+    	
     	long totalWait = System.currentTimeMillis();
     	for(Input input : inputs){
     		//TODO change this to multi-threaded
-    		long inputWait = System.currentTimeMillis();
+    //		long inputWait = System.currentTimeMillis();
     		if(input.getAmount()>0){
     			try {
-
-    				market.buy(input.getGood(), input.getAmount());
+    				productionCost += market.buy(input.getGood(), input.getAmount(), this);
     			} catch (InterruptedException e) {
     				// this shouldn't happen. Only consumers can be interrupted!
     				throw new RuntimeException("Interrupted when buying!");
     			}
     		
-    		market.registerDelay(System.currentTimeMillis()-inputWait, input.getGood());
+    	//	market.registerDelay(System.currentTimeMillis()-inputWait, input.getGood());
     		}
     	}
     	totalWait = System.currentTimeMillis()- totalWait ;
+    	//System.out.println("total wait:" + totalWait);
+    	//divide production cost over the total output
+    	productionCost = (productionCost / new Double(outputQuantity));
+    	
     	//if you are here all inputs have been bought!
     	Data.beginProduction(this, outputType,System.currentTimeMillis());
 
@@ -247,7 +300,7 @@ public class Firm extends Thread {
 
     private void fire(){
     	
-    	  market.getLabor().lock.lock();
+	    	  market.getLabor().lock.lock();
           try{
         	  Consumer toFire = workers.remove(0);
               market.getLabor().fire(this, toFire);
@@ -277,7 +330,42 @@ public class Firm extends Thread {
     	
     	
     }
-    
-//TODO add a function for hiring the initial workers!
 
+
+    /*******************************
+     * Implementing trader
+     * 
+     * These are not the command to call for the firm to buy and sell. 
+     * If you need the firm to buy something call the market methods
+     * 
+     * These public methods instead are called by the good itself when it changes hands
+     *****************************/
+	
+
+	@Override
+	public void buy(Good bought) {
+		
+		inventory[bought.getGoodType().ordinal()].add(bought);
+		money -= bought.getPriceSold();
+		
+	}
+
+
+	@Override
+	public void sell(Good sold) {
+		
+		boolean valid = inventory[sold.getGoodType().ordinal()].remove(sold);
+		money += sold.getPriceSold();
+		
+		if(valid==false)
+			throw new RuntimeException(this.getFirmName() + " sold a good it doesn't have!");
+		
+	}
+	
+	
+    
+    
+
+    
+    
 }

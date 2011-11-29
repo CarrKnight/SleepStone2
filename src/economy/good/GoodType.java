@@ -2,12 +2,12 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package economy;
+package economy.good;
 
 /**
  *
  * @author carrknight
  */
-public enum Good {
+public enum GoodType {
     MEDICINE,WINE, FERTILIZER, IRON, PIG_IRON, STEEL, TOOLS 
 }

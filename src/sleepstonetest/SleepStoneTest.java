@@ -5,10 +5,10 @@
 package sleepstonetest;
 
 import economy.Data;
-import economy.Good;
-import economy.Input;
-import economy.Market;
 import economy.firm.Firm;
+import economy.good.GoodType;
+import economy.good.Input;
+import economy.market.Market;
 
 import java.util.ArrayList;
 import java.util.concurrent.Executor;
@@ -44,10 +44,10 @@ public class SleepStoneTest {
 
 		@SuppressWarnings("unused")
 		Market market = new Market();
-		Firm firmOne = new Firm(300, "Iron Mine", Good.IRON, 10, 2,new Input(Good.TOOLS, 0)); firms.add(firmOne);
-		Firm firmTwo = new Firm(600, "Smelters", Good.PIG_IRON, 10, 2,new Input(Good.IRON, 10));firms.add(firmTwo);
-		Firm firmThree = new Firm(900, "Steel Mill", Good.STEEL, 10, 2,new Input(Good.PIG_IRON, 10)); firms.add(firmThree);
-		Firm firmFour = new Firm(1200, "Equipment Manufactory", Good.TOOLS, 10, 2,new Input(Good.STEEL, 10)); firms.add(firmFour);
+		Firm firmOne = new Firm(300, "Iron Mine", GoodType.IRON, 10, 2,new Input(GoodType.TOOLS, 10)); firms.add(firmOne);
+		Firm firmTwo = new Firm(600, "Smelters", GoodType.PIG_IRON, 10, 2,new Input(GoodType.IRON, 10));firms.add(firmTwo);
+		Firm firmThree = new Firm(900, "Steel Mill", GoodType.STEEL, 10, 2,new Input(GoodType.PIG_IRON, 10)); firms.add(firmThree);
+		Firm firmFour = new Firm(1200, "Equipment Manufactory", GoodType.TOOLS, 10, 2,new Input(GoodType.STEEL, 10)); firms.add(firmFour);
 
 
 
@@ -58,10 +58,13 @@ public class SleepStoneTest {
 
 	private static void startSimulation(Market market){
 		Data.initializeData();
+		
+		
 		for(Firm x : firms)
 		{
 			x.start();
 		}
+	
 		market.getLabor().startWorkers();
 
 	}

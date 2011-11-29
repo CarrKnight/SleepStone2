@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package economy;
+package economy.good;
 
 /**
  * this is just an object holding a good type and a double representing how much
@@ -11,11 +11,11 @@ package economy;
  */
 public class Input {
     
-    final private Good good;
+    final private GoodType good;
     
     final private Integer amount;
 
-    public Input(Good good, Integer amount) {
+    public Input(GoodType good, Integer amount) {
         this.good = good;
         this.amount = amount;
     }
@@ -24,7 +24,7 @@ public class Input {
         return amount;
     }
 
-    public Good getGood() {
+    public GoodType getGood() {
         return good;
     }
     

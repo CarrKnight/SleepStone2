@@ -12,6 +12,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 import economy.firm.Firm;
+import economy.market.Market;
 
 /**
  * This is basically the simplest Labor Market Possible. It's an integer having the number of free workers

@@ -2,13 +2,21 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package economy;
+package economy.market;
 
 import java.text.DecimalFormat;
+import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.List;
 import java.util.concurrent.Semaphore;
+
+import economy.LaborMarket;
+import economy.Trader;
+import economy.good.Good;
+import economy.good.GoodType;
+import economy.good.Input;
 
 
 /**
@@ -25,42 +33,61 @@ import java.util.concurrent.Semaphore;
  */
 public class Market {
 
+	
+	/**
+	 * this is the list of possible goods demanded by consumers, it's set up at default by the static intializer
+	 * but it can be set through the setter
+	 */
+	private static List<Input> possibleConsumerGoods;
+	
+	static{
+		
+		possibleConsumerGoods = new ArrayList<Input>();
+		possibleConsumerGoods.add(new Input(GoodType.TOOLS, 1));
+		
+	}
+	
+	
+	
+	public static List<Input> getPossibleConsumerGoods() {
+		return possibleConsumerGoods;
+	}
+
+	
+	private static double getCurrentWage(){
+		
+		//FIXME implement this!
+		return 0d;
+	}
 
 
-    final static private Semaphore[] globalInventory = new Semaphore[Good.values().length];
+    final static private CentralizedExchange[] globalInventory = new CentralizedExchange[GoodType.values().length];
 
 
     final static private LaborMarket labor = new LaborMarket(1000, new Market());
 
-    final static private Double[] delays = new Double[Good.values().length];
 
     public  LaborMarket getLabor() {
         return labor;
     }
 
-    /**
-     * the delays will be computed with exponential average L=1/2
-     */
 
-    public void registerDelay(Long delay, Good market){
-        delays[market.ordinal()] = delays[market.ordinal()] * .5 + ((double) delay) * .5;
-        if(market == Good.TOOLS)
-     //   	System.out.println("delay in " + market + " is now " + delays[market.ordinal()]);
-        	System.out.println("Consumers Waiting : " + globalInventory[market.ordinal()].getQueueLength());
-
+    public String getPrice(GoodType market){
+    	return globalInventory[market.ordinal()].getPrice();
+    	
     }
 
-    public double getDelay(Good market){
-        return delays[market.ordinal()];
+    public double getDelay(GoodType market){
+        return globalInventory[market.ordinal()].getAverageDelay();
     }
 
     //static initialization is useful because no thread can touch anything in it
     //so we can fully initialize what's important
     static{
        
-        for(Good x : Good.values()){
-            globalInventory[x.ordinal()] = new Semaphore(10, true);
-            delays[x.ordinal()] = new Double(0);
+        for(GoodType x : GoodType.values()){
+            globalInventory[x.ordinal()] = new CentralizedExchange(10, 1d, x);
+
         }
     }
 
@@ -79,9 +106,9 @@ public class Market {
      * @param amount how much you want
      * @throws InterruptedException 
      */
-    public void buy(Good goodType, int amount) throws InterruptedException{
+    public double buy(GoodType goodType, int amount,Trader buyer) throws InterruptedException{
 
-        globalInventory[goodType.ordinal()].acquire(amount);
+        return(globalInventory[goodType.ordinal()].acquire(amount, buyer));
 
     }
 
@@ -91,9 +118,9 @@ public class Market {
      * @param goodType the type of good you want to sell
      * @param amount how much you deposit
      */
-    public void sell(Good goodType, int amount){
+    public void sell(Good toBeSold){
 
-        globalInventory[goodType.ordinal()].release(amount);
+        globalInventory[toBeSold.getGoodType().ordinal()].offer(toBeSold);
 
     }
 
@@ -102,10 +129,10 @@ public class Market {
         StringBuilder builder = new StringBuilder();
         //let only one iteratation
         synchronized(this){
-            for(Good x :Good.values())
+            for(GoodType x :GoodType.values())
             {
                 builder.append(x.name()).append("-")
-                        .append(globalInventory[x.ordinal()].availablePermits())
+                        .append(globalInventory[x.ordinal()].size())
                         .append("\n");
             }
         }
@@ -116,12 +143,12 @@ public class Market {
     
 
     public synchronized String[] toStringArray(){
-    	String[] toReturn = new String[Good.values().length+1];
+    	String[] toReturn = new String[GoodType.values().length+1];
     	
     	toReturn[0] = Long.toString(System.currentTimeMillis());
     	
-    	for(Good x :Good.values()){
-    		toReturn[x.ordinal()+1] = Integer.toString(globalInventory[x.ordinal()].availablePermits());
+    	for(GoodType x :GoodType.values()){
+    		toReturn[x.ordinal()+1] = Integer.toString(globalInventory[x.ordinal()].size());
     	}
     	
     	return toReturn;
