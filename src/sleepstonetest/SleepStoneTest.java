@@ -9,6 +9,8 @@ import economy.firm.Firm;
 import economy.good.GoodType;
 import economy.good.Input;
 import economy.market.Market;
+import economy.workers.LaborMarket;
+import economy.workers.WageRoutine;
 
 import java.util.ArrayList;
 import java.util.concurrent.Executor;
@@ -20,14 +22,14 @@ import java.util.concurrent.Executor;
 public class SleepStoneTest {
 
 	public final static ArrayList<Firm> firms = new ArrayList<Firm>();;
-	
+
 
 
 
 	/**
-     * @param args the command line arguments
-     */
-/*    public static void main(String[] args) {
+	 * @param args the command line arguments
+	 */
+	/*    public static void main(String[] args) {
 
         @SuppressWarnings("unused")
 		Market market = new Market();
@@ -37,9 +39,9 @@ public class SleepStoneTest {
         firmOne.start(); firmTwo.start();
 
     }
-    
-    */
-	
+
+	 */
+
 	public static void main(String[] args) {
 
 		@SuppressWarnings("unused")
@@ -47,26 +49,30 @@ public class SleepStoneTest {
 		Firm firmOne = new Firm(300, "Iron Mine", GoodType.IRON, 10, 2,new Input(GoodType.TOOLS, 10)); firms.add(firmOne);
 		Firm firmTwo = new Firm(600, "Smelters", GoodType.PIG_IRON, 10, 2,new Input(GoodType.IRON, 10));firms.add(firmTwo);
 		Firm firmThree = new Firm(900, "Steel Mill", GoodType.STEEL, 10, 2,new Input(GoodType.PIG_IRON, 10)); firms.add(firmThree);
-		Firm firmFour = new Firm(1200, "Equipment Manufactory", GoodType.TOOLS, 10, 2,new Input(GoodType.STEEL, 10)); firms.add(firmFour);
+		Firm firmFour = new Firm(1200, "Equipment Manufactory", GoodType.TOOLS, 5, 2,new Input(GoodType.STEEL, 10)); firms.add(firmFour);
 
 
 
 		startSimulation(market);
-	//	firmOne.start(); firmTwo.start();firmThree.start();firmFour.start();
+		//	firmOne.start(); firmTwo.start();firmThree.start();firmFour.start();
 
 	}
 
 	private static void startSimulation(Market market){
 		Data.initializeData();
-		
-		
+
+
 		for(Firm x : firms)
 		{
 			x.start();
 		}
-	
-		market.getLabor().startWorkers();
 
+		market.getLabor().startWorkers();
+		if(LaborMarket.consumers)
+		{
+			WageRoutine wageRoutine = new WageRoutine();
+			wageRoutine.start();
+		}
 	}
 
 }

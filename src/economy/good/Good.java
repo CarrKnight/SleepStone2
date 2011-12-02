@@ -71,11 +71,9 @@ public class Good implements Comparable<Good>{
 		
 	}
 	
-	public String toString(){
-		return goodType + " priced " + this.priceSold ;
-	}
 
-	public void trade(Trader buyer){
+
+	public synchronized void  trade(Trader buyer){
 		buyer.buy(this);
 		if(owner!=null)
 			owner.sell(this);
@@ -100,6 +98,11 @@ public class Good implements Comparable<Good>{
 	}
 	
 
+	public String toString(){
+		return
+				"Good " + goodType + "at price" + getPriceSold() + " owned by:" + owner;
+		
+	}
 
 
 }

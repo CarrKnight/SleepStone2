@@ -4,7 +4,6 @@
  */
 package economy.firm;
 
-import economy.Consumer;
 import economy.Data;
 import economy.Trader;
 import economy.good.Good;
@@ -12,9 +11,12 @@ import economy.good.GoodType;
 import economy.good.Input;
 import economy.market.CentralizedExchange;
 import economy.market.Market;
+import economy.workers.Consumer;
+import economy.workers.LaborMarket;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -97,6 +99,15 @@ public class Firm extends Thread implements Trader{
   //  public int getWorkers() {return workers;}
     
     final private ArrayList<Consumer> workers = new ArrayList<Consumer>();
+    
+    /**
+     * This returns an unmodifiable list of workers, used to pay wages by the wage routine!
+     * @return
+     */
+    synchronized public List<Consumer> getWorkers(){
+    	return Collections.unmodifiableList(workers);
+    	
+    }
 
     public int getFirmSize(){
     	return workers.size();
@@ -171,22 +182,22 @@ public class Firm extends Thread implements Trader{
     @Override
     public void run() {
 
-        while(!cancelled){
+	        while(!cancelled){
 
 
 
             /********************************
              * PRELIM
              ********************************/
-            long wait = System.currentTimeMillis();
+            long startTime = System.currentTimeMillis();
             //check for inputs!
             gatherSupplies();
-
+            consumeSupplies();
             //System.out.println(this.firmName + " Finished gathering supplies after " + (System.currentTimeMillis()-wait));
             /********************************
              * PRODUCTION
              ********************************/
-             wait = System.currentTimeMillis();
+           //  wait = System.currentTimeMillis();
             //set up the work to be done
             //"hire the workers"
             workpool = Executors.newFixedThreadPool(workers.size());
@@ -206,7 +217,7 @@ public class Firm extends Thread implements Trader{
             }
 
             //we are done!
-            System.out.println(this.firmName + " ended production in ms :" + (System.currentTimeMillis()-wait) 
+            System.out.println(this.firmName + " ended production in ms :" + (System.currentTimeMillis()-startTime) 
             		+ " with " + workers.size() + " workers");
 
             //clean up
@@ -214,6 +225,14 @@ public class Firm extends Thread implements Trader{
             workpool=null;
        //      numbersToCrunch=null;
        
+            //add labor cost to the production cost
+            //this is just number of workers * (time of production / wagePeriod)
+            productionCost = productionCost + workers.size()* market.getLabor().getCurrentWage()
+            		*(((double) (System.currentTimeMillis()-startTime))/ ((double) LaborMarket.wagePeriod)); 
+          //divide production cost over the total output
+        	productionCost = (productionCost / new Double(outputQuantity));
+            
+            
             //now the goods appear in your inventory
             ArrayList<Good> toSell = new ArrayList<Good>();
             for(int i=0; i < outputQuantity; i++)
@@ -276,8 +295,7 @@ public class Firm extends Thread implements Trader{
     	}
     	totalWait = System.currentTimeMillis()- totalWait ;
     	//System.out.println("total wait:" + totalWait);
-    	//divide production cost over the total output
-    	productionCost = (productionCost / new Double(outputQuantity));
+    	
     	
     	//if you are here all inputs have been bought!
     	Data.beginProduction(this, outputType,System.currentTimeMillis());
@@ -291,6 +309,19 @@ public class Firm extends Thread implements Trader{
         }
 
 
+    }
+    
+    /**
+     * Simply remove supplies from the inventory
+     */
+    private void consumeSupplies(){
+    	for(Input input : inputs){
+    		for(int i=0; i< input.getAmount(); i++){
+    			inventory[input.getGood().ordinal()].remove(0);
+    		}
+    	}
+    	
+    	
     }
 
     @Override
@@ -358,11 +389,16 @@ public class Firm extends Thread implements Trader{
 		money += sold.getPriceSold();
 		
 		if(valid==false)
-			throw new RuntimeException(this.getFirmName() + " sold a good it doesn't have!");
+			throw new RuntimeException(this.getFirmName() + " sold a good it doesn't have!" + sold);
 		
 	}
 	
-	
+	public void payWage(Consumer c){
+		double wage =  market.getLabor().getCurrentWage();
+		money = money - wage;
+		c.earnWage(wage);
+		
+	}
     
     
 

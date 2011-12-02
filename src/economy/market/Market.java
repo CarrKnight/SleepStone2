@@ -12,11 +12,11 @@ import java.util.Hashtable;
 import java.util.List;
 import java.util.concurrent.Semaphore;
 
-import economy.LaborMarket;
 import economy.Trader;
 import economy.good.Good;
 import economy.good.GoodType;
 import economy.good.Input;
+import economy.workers.LaborMarket;
 
 
 /**
@@ -53,12 +53,7 @@ public class Market {
 		return possibleConsumerGoods;
 	}
 
-	
-	private static double getCurrentWage(){
-		
-		//FIXME implement this!
-		return 0d;
-	}
+
 
 
     final static private CentralizedExchange[] globalInventory = new CentralizedExchange[GoodType.values().length];
@@ -76,9 +71,18 @@ public class Market {
     	return globalInventory[market.ordinal()].getPrice();
     	
     }
+    
+    public static double getPriceDouble(GoodType market){
+    	return globalInventory[market.ordinal()].getPriceDouble();
+    	
+    }
 
     public double getDelay(GoodType market){
-        return globalInventory[market.ordinal()].getAverageDelay();
+    	double delay =  globalInventory[market.ordinal()].getAverageDelay();
+    	if(market.equals(GoodType.TOOLS))
+    		System.out.println("Delay in tools:" + delay);
+    	
+        return delay;
     }
 
     //static initialization is useful because no thread can touch anything in it

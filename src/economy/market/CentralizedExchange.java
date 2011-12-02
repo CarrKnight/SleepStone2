@@ -45,6 +45,16 @@ public class CentralizedExchange {
 		else
 			return(money.format(lastGoodTraded.getPriceSold()));
 	}
+	
+	public double getPriceDouble() {
+		final DecimalFormat money = new DecimalFormat("$0.00");
+		
+		
+		if(lastGoodTraded==null)
+			return(1d);
+		else
+			return(lastGoodTraded.getPriceSold());
+	}
 
 
 	/**
@@ -121,7 +131,7 @@ public class CentralizedExchange {
 	 * The addition is the computation of delay
 	 * @throws InterruptedException
 	 */
-	private Good take() throws InterruptedException{
+	private synchronized Good take() throws InterruptedException{
 		//start timer
 		long time = System.currentTimeMillis();
 		//take the good

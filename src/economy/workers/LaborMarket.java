@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package economy;
+package economy.workers;
 
 import java.util.Queue;
 import java.util.concurrent.BlockingQueue;
@@ -12,6 +12,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 import economy.firm.Firm;
+import economy.good.Input;
 import economy.market.Market;
 
 /**
@@ -24,6 +25,36 @@ import economy.market.Market;
  */
 public class LaborMarket {
 
+	/**
+	 * Do consumers matter
+	 */
+	public static final boolean consumers = true;
+	
+	public static final boolean adaptive = true;
+	
+	public final static long wagePeriod = 6000;
+
+	
+	
+	public double getCurrentWage(){
+		if(!consumers){
+			return 0d;
+		}
+		else{
+		double sumPrices=0d;
+		
+		for(Input i : Market.getPossibleConsumerGoods()){
+			sumPrices = new Double(i.getAmount()) * Market.getPriceDouble(i.getGood());
+		}
+		sumPrices = sumPrices / new Double(Market.getPossibleConsumerGoods().size());
+		System.out.println("wages are: " + sumPrices);
+		if(!adaptive)
+			return sumPrices;
+		else
+			return sumPrices * Consumer.priceExpectations;
+		}
+	}
+	
     public ReentrantLock lock = new ReentrantLock();
 
     /**
@@ -48,10 +79,11 @@ public class LaborMarket {
      * @param market
      */
     public LaborMarket(int totalWorkers, Market market) {
+
     	for(int i = 0; i<totalWorkers; i++)
     	{
     	
-    		freeWorkers.add(new Consumer(market));
+    		freeWorkers.add(new Consumer(market, ""+i));
     			
     	}
         //this.freeWorkers = new AtomicInteger(freeWorkers);
@@ -70,6 +102,7 @@ public class LaborMarket {
      * @param employer firm hiring
      * @param startTheConsumer if this is not in the initialization of the firm, make this true
      */
+    //TODO remove the boolean argument
     public Consumer hire(Firm employer, boolean startTheConsumer){
     	//it has to be locked!
     	assert lock.isLocked();
@@ -81,8 +114,8 @@ public class LaborMarket {
     	employedWorkers.add(hired);
     	hired.setEmployer(employer);
     	
-    	if(startTheConsumer)
-    		hired.start();
+   // 	if(startTheConsumer)
+   // 		hired.start();
     	
     	return hired;
     }
@@ -94,23 +127,31 @@ public class LaborMarket {
         //remove it from the work
         if(!employedWorkers.remove(fired))
         {
-    		throw new RuntimeException("Trying to fire an unemployed worker!");
-    	}
-        
+        	throw new RuntimeException("Trying to fire an unemployed worker!");
+        }
+
         //stop it
         fired.setEmployer(null);
-        fired.interrupt();
+        // fired.interrupt();
         //put it among the freeagents!
-        freeWorkers.add(new Consumer(fired.getMarket()));
-        
+        //try {
+        freeWorkers.add(fired);
+        //	freeWorkers.add(fired.clone());
+        //}
+        /*catch (CloneNotSupportedException e) {
+			throw new RuntimeException("Clone error when firing, what happened?");
+		}*/
+
     }
-    
+
     /**
      * When it's time, start the workers
      */
     public void startWorkers(){
-    	for (Consumer e : employedWorkers)
-    		e.start();
+    	//useless
+    	
+    	//for (Consumer e : employedWorkers)
+    		//e.start();
     		
     	
     }
