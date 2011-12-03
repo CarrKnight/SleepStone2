@@ -27,6 +27,11 @@ public class Good implements Comparable<Good>{
 	
 	
 	
+	
+	public Trader getOwner() {
+		return owner;
+	}
+
 	public static DecimalFormat getMoney() {
 		return money;
 	}

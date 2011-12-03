@@ -6,6 +6,9 @@ import java.util.PriorityQueue;
 import java.util.concurrent.PriorityBlockingQueue;
 import java.util.concurrent.Semaphore;
 
+import sleepstonetest.SleepStoneTest;
+import sleepstonetest.gui.SleepGUI;
+
 
 import economy.Trader;
 import economy.good.Good;
@@ -111,6 +114,8 @@ public class CentralizedExchange {
 		//if you are here you have acquired permits! trade them!
 		for(int i=0; i < amount; i++){
 			Good good = take();
+			if(SleepGUI.GUI)
+				SleepStoneTest.gui.goodBought(good.getGoodType(), buyer);
 			good.trade(buyer);
 			lastGoodTraded = good;
 			totalCost +=good.getPriceSold();
@@ -120,9 +125,11 @@ public class CentralizedExchange {
 	}
 
 	public void offer(Good onSale) {
-	
+		Trader seller = onSale.getOwner();
 		goodsToSell.add(onSale);
-		
+		if(SleepGUI.GUI)
+			SleepStoneTest.gui.goodSold(onSale.getGoodType(), seller);
+			
 	}
 	
 	

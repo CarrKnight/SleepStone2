@@ -33,7 +33,7 @@ import economy.workers.LaborMarket;
  */
 public class Market {
 
-	
+	public final static int numberOfWorkers = 100;
 	/**
 	 * this is the list of possible goods demanded by consumers, it's set up at default by the static intializer
 	 * but it can be set through the setter
@@ -58,8 +58,11 @@ public class Market {
 
     final static private CentralizedExchange[] globalInventory = new CentralizedExchange[GoodType.values().length];
 
+    final static public int getMarketSize(GoodType market){
+    	return globalInventory[market.ordinal()].size();
+    }
 
-    final static private LaborMarket labor = new LaborMarket(1000, new Market());
+    final static private LaborMarket labor = new LaborMarket(100, new Market());
 
 
     public  LaborMarket getLabor() {

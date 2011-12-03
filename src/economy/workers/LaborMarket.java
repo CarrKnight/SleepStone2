@@ -4,6 +4,9 @@
  */
 package economy.workers;
 
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -28,7 +31,7 @@ public class LaborMarket {
 	/**
 	 * Do consumers matter
 	 */
-	public static final boolean consumers = true;
+	public static final boolean consumers = false;
 	
 	public static final boolean adaptive = true;
 	
@@ -64,6 +67,12 @@ public class LaborMarket {
     private BlockingQueue<Consumer> freeWorkers = new LinkedBlockingQueue<Consumer>();
     
     /**
+     * this is just a normal list keeping all workers in. This is useful for the GUI
+     */
+    public List<Consumer> workers;
+    
+    
+    /**
      * Queues of workers that are consuming right now
      * KEEP PRIVATE! 
      */
@@ -80,12 +89,18 @@ public class LaborMarket {
      */
     public LaborMarket(int totalWorkers, Market market) {
 
+    	//here we keep another list of workers, we are going to make it immutable and searchable by the GUI
+    	LinkedList<Consumer> workers = new LinkedList<Consumer>();
+    	
+    	
     	for(int i = 0; i<totalWorkers; i++)
     	{
-    	
-    		freeWorkers.add(new Consumer(market, ""+i));
-    			
+    		Consumer c = new Consumer(market, ""+i);
+    		freeWorkers.add(c);
+    		workers.add(c);
+    		
     	}
+    	this.workers = Collections.unmodifiableList(workers);
         //this.freeWorkers = new AtomicInteger(freeWorkers);
         //this.totalWorkers = new AtomicInteger(totalWorkers);
     }

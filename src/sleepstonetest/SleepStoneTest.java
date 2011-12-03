@@ -15,6 +15,8 @@ import economy.workers.WageRoutine;
 import java.util.ArrayList;
 import java.util.concurrent.Executor;
 
+import sleepstonetest.gui.SleepGUI;
+
 /**
  *
  * @author carrknight
@@ -22,8 +24,9 @@ import java.util.concurrent.Executor;
 public class SleepStoneTest {
 
 	public final static ArrayList<Firm> firms = new ArrayList<Firm>();;
+	public static Market market;
 
-
+	public static SleepGUI gui = new SleepGUI();
 
 
 	/**
@@ -41,24 +44,28 @@ public class SleepStoneTest {
     }
 
 	 */
-
-	public static void main(String[] args) {
-
-		@SuppressWarnings("unused")
-		Market market = new Market();
+	
+	static{
+		
+		market = new Market();
 		Firm firmOne = new Firm(300, "Iron Mine", GoodType.IRON, 10, 2,new Input(GoodType.TOOLS, 10)); firms.add(firmOne);
 		Firm firmTwo = new Firm(600, "Smelters", GoodType.PIG_IRON, 10, 2,new Input(GoodType.IRON, 10));firms.add(firmTwo);
 		Firm firmThree = new Firm(900, "Steel Mill", GoodType.STEEL, 10, 2,new Input(GoodType.PIG_IRON, 10)); firms.add(firmThree);
-		Firm firmFour = new Firm(1200, "Equipment Manufactory", GoodType.TOOLS, 5, 2,new Input(GoodType.STEEL, 10)); firms.add(firmFour);
+		Firm firmFour = new Firm(1200, "Equipment Manufactory", GoodType.TOOLS, 10, 2,new Input(GoodType.STEEL, 10)); firms.add(firmFour);
 
-
-
-		startSimulation(market);
-		//	firmOne.start(); firmTwo.start();firmThree.start();firmFour.start();
-
+	//	gui= new SleepGUI();
 	}
 
-	private static void startSimulation(Market market){
+	//public static void main(String[] args) {
+
+	
+	//	startSimulation(market);
+		//	firmOne.start(); firmTwo.start();firmThree.start();firmFour.start();
+
+	//}
+
+	public void startSimulation(Market market){
+		System.out.println("start");
 		Data.initializeData();
 
 
