@@ -92,11 +92,14 @@ public class Consumer implements Runnable, Trader {
 		List<Input> possibleConsumerGoods = Market.getPossibleConsumerGoods(); 
 		Input toBuy = possibleConsumerGoods.get(randomizer.nextInt(possibleConsumerGoods.size()));
 
+		
+		
 		try {
 			
+			market.buy(toBuy.getGood(), toBuy.getAmount(), this);
+			
 
-
-			if(money>= new Double(Market.getPriceDouble(toBuy.getGood()) * toBuy.getAmount())){
+		/*	if(money>= new Double(Market.getPriceDouble(toBuy.getGood()) * toBuy.getAmount())){
 
 				priceExpectations = Math.max(1d, priceExpectations - 0.025);
 				market.buy(toBuy.getGood(), toBuy.getAmount(), this);
@@ -118,8 +121,10 @@ public class Consumer implements Runnable, Trader {
 
 				if(LaborMarket.adaptive)
 					money=0;
-
-			}
+*/
+			
+			
+			
 
 
 		} catch (InterruptedException e) {

@@ -5,6 +5,7 @@ import java.util.ConcurrentModificationException;
 import javax.management.RuntimeErrorException;
 
 import economy.firm.Firm;
+import economy.market.Market;
 
 import sleepstonetest.SleepStoneTest;
 
@@ -16,8 +17,19 @@ import sleepstonetest.SleepStoneTest;
  */
 public class WageRoutine extends Thread {
 
+	Market market;
+	
 	boolean cancelled = false;
 	
+	
+	
+	public WageRoutine(Market market) {
+		super();
+		this.market = market;
+	}
+
+
+
 	public void run() {
 		
 		while(!cancelled){
@@ -29,18 +41,29 @@ public class WageRoutine extends Thread {
 				throw new RuntimeException("What's going on? abort abort abort!");
 			}
 			
-			for(Firm f : SleepStoneTest.firms)
+			System.out.println("Paytime!");
+			
+		/*	for(Firm f : SleepStoneTest.firms)
 			{
 				for(Consumer c : f.getWorkers())
 				{	
 					try{
 					f.payWage(c);}
 					catch(ConcurrentModificationException e){
-						
+						throw new RuntimeException("Noooooooooooooo");
 					}
 				}
 			}
-			
+			*/
+			int i=0;
+			for(Consumer c : market.getLabor().workers)
+				if(c.getEmployer() != null){
+					i++;
+					Thread t = new Thread(c);
+					t.run();
+				}
+			System.out.println("I ACTIVATE " + i + " CONSUMERS!");
+					
 			
 			
 		}

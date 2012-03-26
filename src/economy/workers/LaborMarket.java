@@ -31,11 +31,11 @@ public class LaborMarket {
 	/**
 	 * Do consumers matter
 	 */
-	public static final boolean consumers = false;
+	public static final boolean consumers = true;
 	
 	public static final boolean adaptive = true;
 	
-	public final static long wagePeriod = 6000;
+	public final static long wagePeriod = 3000;
 
 	
 	

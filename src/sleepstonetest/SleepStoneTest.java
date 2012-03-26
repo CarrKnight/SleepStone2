@@ -11,11 +11,9 @@ import economy.good.Input;
 import economy.market.Market;
 import economy.workers.LaborMarket;
 import economy.workers.WageRoutine;
+import sleepstonetest.gui.SleepGUI;
 
 import java.util.ArrayList;
-import java.util.concurrent.Executor;
-
-import sleepstonetest.gui.SleepGUI;
 
 /**
  *
@@ -48,7 +46,15 @@ public class SleepStoneTest {
 	static{
 		
 		market = new Market();
-		Firm firmOne = new Firm(300, "Iron Mine", GoodType.IRON, 10, 2,new Input(GoodType.TOOLS, 10)); firms.add(firmOne);
+		Firm firmOne;
+		if(LaborMarket.consumers){
+			firmOne = new Firm(300, "Iron Mine", GoodType.IRON, 10, 2,new Input(GoodType.TOOLS, 0)); firms.add(firmOne);
+			
+		}
+		else{
+			firmOne = new Firm(300, "Iron Mine", GoodType.IRON, 10, 2,new Input(GoodType.TOOLS, 10)); firms.add(firmOne);
+		}
+		
 		Firm firmTwo = new Firm(600, "Smelters", GoodType.PIG_IRON, 10, 2,new Input(GoodType.IRON, 10));firms.add(firmTwo);
 		Firm firmThree = new Firm(900, "Steel Mill", GoodType.STEEL, 10, 2,new Input(GoodType.PIG_IRON, 10)); firms.add(firmThree);
 		Firm firmFour = new Firm(1200, "Equipment Manufactory", GoodType.TOOLS, 10, 2,new Input(GoodType.STEEL, 10)); firms.add(firmFour);
@@ -77,7 +83,7 @@ public class SleepStoneTest {
 		market.getLabor().startWorkers();
 		if(LaborMarket.consumers)
 		{
-			WageRoutine wageRoutine = new WageRoutine();
+			WageRoutine wageRoutine = new WageRoutine(market);
 			wageRoutine.start();
 		}
 	}

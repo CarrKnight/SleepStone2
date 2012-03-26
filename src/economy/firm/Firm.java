@@ -324,7 +324,9 @@ public class Firm extends Thread implements Trader{
 		Data.beginProduction(this, outputType,System.currentTimeMillis());
 
 		//Fire somebody
-		if(isAdaptive && totalWait > maxInputWaitingTime && workers.size() > 1)
+		if(isAdaptive && (totalWait > maxInputWaitingTime || 
+				( outputType != GoodType.TOOLS && Market.getMarketSize(outputType)>30 )) 
+				&& workers.size() > 1)
 		{
 
 			this.fire();

@@ -1,40 +1,23 @@
 package sleepstonetest.gui;
 
-import java.awt.BasicStroke;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.MediaTracker;
-import java.awt.Point;
-import java.awt.Rectangle;
-import java.awt.Stroke;
-import java.awt.geom.Rectangle2D;
-import java.awt.image.ImageObserver;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Hashtable;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
-
-import javax.swing.ImageIcon;
-import javax.swing.JFrame;
-import javax.swing.JPanel;
-import javax.swing.SwingUtilities;
-
-
-
-import sleepstonetest.SleepStoneTest;
-
 import economy.Trader;
 import economy.firm.Firm;
 import economy.firm.FirmStatus;
 import economy.good.GoodType;
 import economy.market.Market;
 import economy.workers.Consumer;
+import sleepstonetest.SleepStoneTest;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.geom.Rectangle2D;
+import java.awt.image.ImageObserver;
+import java.util.ArrayList;
+import java.util.Hashtable;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 
 public class SleepGUI extends JPanel {
@@ -90,6 +73,7 @@ public class SleepGUI extends JPanel {
 
 	public static void main(String[] args){
 		final SleepStoneTest test = new SleepStoneTest();
+		if(GUI){
 		final SleepGUI t = SleepStoneTest.gui;
 		
 		
@@ -135,7 +119,10 @@ public class SleepGUI extends JPanel {
 		repainter = new Repainter(t, 50l);
 		Thread animator = new Thread(repainter);
 		animator.start();
-
+		}
+		else{
+			test.startSimulation(SleepStoneTest.market);
+		}
 
 		
 	}
@@ -192,7 +179,7 @@ public class SleepGUI extends JPanel {
 		//Point ending = new Point((int)Math.round( firmRectangle.getX() + firmLenght/2d),
 			//	(int)firmRectangle.getY()  );
 		//Point ending = new Point(100,100);
-		System.out.println(start + " " + ending);
+		//System.out.println(start + " " + ending);
 		
 		
 		GoodAnimation animation = new GoodAnimation(12,
@@ -343,7 +330,7 @@ public class SleepGUI extends JPanel {
 			rec.setRect(firmsPlace.get(x));
 			FirmStatus status = x.getStatus();
 			
-			g2d.setColor(Color.black);
+			g2d.setColor( Color.black);
 			
 			g2d.drawString(x.getFirmName(), 
 					Math.round(rec.getMinX()), Math.round(rec.getMaxY()+15d));

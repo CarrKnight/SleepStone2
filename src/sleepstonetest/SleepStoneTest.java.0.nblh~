@@ -1,0 +1,31 @@
+/*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package sleepstonetest;
+
+import economy.Good;
+import economy.Input;
+import economy.Market;
+import economy.firm.Firm;
+import java.util.concurrent.Executor;
+
+/**
+ *
+ * @author carrknight
+ */
+public class SleepStoneTest {
+
+    /**
+     * @param args the command line arguments
+     */
+    public static void main(String[] args) {
+
+        Market market = new Market();
+
+        Firm firmOne = new Firm(300, "Firm 1", Good.MEDICINE, 10, 2,new Input(Good.WINE, 10));
+        Firm firmTwo = new Firm(600, "Firm 2", Good.WINE, 10, 2,new Input(Good.MEDICINE, 10));
+        firmOne.start(); firmTwo.start();
+
+    }
+}
